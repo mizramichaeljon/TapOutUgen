@@ -9,12 +9,14 @@ set(PLUGIN_NAME TapOut)
 # === REQUIRED: SuperCollider path ===
 option(SC_PATH "Path to SuperCollider source" "")
 if(NOT SC_PATH)
+    message(STATUS "Usage: cmake .. -DSC_PATH=/path/to/supercollider -DSHARED_RINGBUFFER_PATH=/path/to/shared-ringbuffer")
     message(FATAL_ERROR "You must set -DSC_PATH to the root of the SuperCollider source.")
 endif()
 
 # === REQUIRED: SharedRingBuffer path ===
 option(SHARED_RINGBUFFER_PATH "Path to SharedRingBuffer project" "")
 if(NOT SHARED_RINGBUFFER_PATH)
+    message(STATUS "Usage: cmake .. -DSC_PATH=/path/to/supercollider -DSHARED_RINGBUFFER_PATH=/path/to/shared-ringbuffer")
     message(FATAL_ERROR "You must set -DSHARED_RINGBUFFER_PATH to the root of shared-ringbuffer project.")
 endif()
 

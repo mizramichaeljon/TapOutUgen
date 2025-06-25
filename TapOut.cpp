@@ -30,7 +30,6 @@ struct TapOut : public Unit {
     // Destructor: Called when the Synth is freed
     ~TapOut() {
         if (ringBuffer) {
-            ringBuffer->close();
             delete ringBuffer;
             ringBuffer = nullptr;
         }

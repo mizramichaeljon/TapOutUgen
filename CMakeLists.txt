@@ -7,17 +7,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(PLUGIN_NAME TapOut)
 
 # === REQUIRED: SuperCollider path ===
-option(SC_PATH "Path to SuperCollider source" "")
-if(NOT SC_PATH)
-    message(STATUS "Usage: cmake .. -DSC_PATH=/path/to/supercollider -DSHARED_RINGBUFFER_PATH=/path/to/shared-ringbuffer")
-    message(FATAL_ERROR "You must set -DSC_PATH to the root of the SuperCollider source.")
+set(SC_PATH "" CACHE PATH "Path to SuperCollider source")
+
+if(NOT SC_PATH OR NOT EXISTS "${SC_PATH}/include/plugin_interface/SC_PlugIn.hpp")
+    message(FATAL_ERROR "
+SC_PATH is missing or invalid.
+
+Please set -DSC_PATH=/path/to/supercollider when running CMake.
+Make sure this path contains the header: include/plugin_interface/SC_PlugIn.hpp
+")
 endif()
 
 # === REQUIRED: SharedRingBuffer path ===
-option(SHARED_RINGBUFFER_PATH "Path to SharedRingBuffer project" "")
-if(NOT SHARED_RINGBUFFER_PATH)
-    message(STATUS "Usage: cmake .. -DSC_PATH=/path/to/supercollider -DSHARED_RINGBUFFER_PATH=/path/to/shared-ringbuffer")
-    message(FATAL_ERROR "You must set -DSHARED_RINGBUFFER_PATH to the root of shared-ringbuffer project.")
+set(SHARED_RINGBUFFER_PATH "" CACHE PATH "Path to shared-ringbuffer project")
+
+if(NOT SHARED_RINGBUFFER_PATH OR NOT EXISTS "${SHARED_RINGBUFFER_PATH}/include/SharedRingBufferHeader.hpp")
+    message(FATAL_ERROR "
+SHARED_RINGBUFFER_PATH is missing or invalid.
+
+Please set -DSHARED_RINGBUFFER_PATH=/path/to/shared-ringbuffer when running CMake.
+Make sure this path contains the 'include' directory.
+")
 endif()
 
 # === Include paths ===

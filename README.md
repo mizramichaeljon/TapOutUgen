@@ -1,68 +1,83 @@
 # TapOutUgen
 
-A custom SuperCollider UGen that taps audio from the signal chain and writes it to a shared memory ring buffer using Boost.Interprocess. This allows for low-latency audio data sharing between SuperCollider and other processes (e.g., openFrameworks).
+A SuperCollider UGen that taps an incoming signal and writes it to a shared memory ring buffer for low-latency inter-process audio sharing (e.g., with openFrameworks).
 
----
-
-## 🛠 Features
+## Features
 
 - Native SuperCollider plugin
 - Mono input, passthrough output
-- Shared memory buffer (via Boost)
+- Uses shared memory via `boost::interprocess`
+- Companion readers available (CLI, oF)
 
 ---
 
-## ✅ Prerequisites
+## Requirements
 
-### 🧰 Dependencies:
-
-- macOS with Homebrew
-- [SuperCollider](https://github.com/supercollider/supercollider) (built from source)
-- Boost (`brew install boost`)
+- SuperCollider built from source
+- Boost (only headers needed)
+- CMake ≥ 3.10
+- A C++14-compatible compiler
 - [shared-ringbuffer](https://github.com/mizramichaeljon/shared-ringbuffer)
 
 ---
 
-## 📦 Build Instructions
+## Build Instructions
 
-### 1. Clone this repo:
+### macOS
+
+1. Install dependencies:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/TapOutUgen.git
+brew install cmake boost
+```
+
+2. Clone and build:
+
+```bash
+git clone https://github.com/mizramichaeljon/TapOutUgen.git
 cd TapOutUgen
+chmod +x build_macos.sh
+./build_macos.sh
 ```
 
-### 2. Set environment variables:
+The plugin `.scx` will be found in `build/Plugins`.
 
-```bash
-export SC_PATH=~/Documents/GitHub/supercollider
-export SHARED_RINGBUFFER_PATH=~/Documents/GitHub/shared-ringbuffer
+---
+
+### Windows
+
+1. Install [CMake](https://cmake.org/), [Boost](https://www.boost.org/) and optionally [vcpkg](https://github.com/microsoft/vcpkg) for Boost headers:
+
+```powershell
+vcpkg install boost
 ```
 
-Adjust the paths above to match your machine.
+2. Build:
 
-### 3. Build the plugin:
-
-```bash
-rm -rf build
-mkdir build && cd build
-cmake .. \
-  -DSC_PATH=$SC_PATH \
-  -DSHARED_RINGBUFFER_PATH=$SHARED_RINGBUFFER_PATH
-cmake --build .
-```
-
-If successful, the plugin binary will be found in:
-
-```bash
-./build/Plugins/TapOut.scx
+```powershell
+git clone https://github.com/mizramichaeljon/TapOutUgen.git
+cd TapOutUgen
+build_windows.bat
 ```
 
 ---
 
-## 📁 Installation
+## Environment Variables (Advanced)
 
-Copy the plugin and class file to your SC extensions directory:
+You can build manually with:
+
+```bash
+cmake .. -DSC_PATH=/path/to/supercollider -DSHARED_RINGBUFFER_PATH=/path/to/shared-ringbuffer
+cmake --build .
+```
+
+The `SC_PATH` should point to the SuperCollider source root, and `SHARED_RINGBUFFER_PATH` to the shared-ringbuffer repo.
+
+---
+
+## Install Plugin
+
+Copy the plugin and class file:
 
 ```bash
 mkdir -p ~/Library/Application\ Support/SuperCollider/Extensions/TapOutUgen
@@ -72,38 +87,23 @@ cp TapOut.sc ~/Library/Application\ Support/SuperCollider/Extensions/TapOutUgen/
 
 ---
 
-## 🧪 Usage in SuperCollider
+## Usage
 
 ```supercollider
 TapOut.ar(SinOsc.ar(440))
 ```
 
-This will:
-
-- Output the signal as usual
-- Write the same signal to a shared memory segment named `ringbuffer_audio`
+This writes the signal to a shared memory buffer called `"ringbuffer_audio"`.
 
 ---
 
-## 🧠 Notes
+## Related Projects
 
-- The shared buffer is 1 second at 48kHz, stereo (float32).
-- You can adjust name/size inside `TapOut.cpp`
-- Use your `shared-ringbuffer` reader to inspect buffer contents externally
-
----
-
-## ✅ License
-
-MIT (c) 2025 Michael-Jon Mizra
+- [shared-ringbuffer](https://github.com/mizramichaeljon/shared-ringbuffer)
+- [ringBufferVisual](https://github.com/mizramichaeljon/ringBufferVisual)
 
 ---
 
-## 🧵 TODO
+## License
 
-- Add multichannel support
-- Implement blocking writes or overwrite protection
-- Build openFrameworks reader demo
-
----
-
+MIT © Michael-Jon Mizra, 2025

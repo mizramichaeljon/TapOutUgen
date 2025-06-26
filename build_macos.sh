@@ -2,7 +2,7 @@
 set -e
 
 # Set these once before building
-SC_PATH="$HOME/dev/supercollider"
+SC_PATH="$HOME/Documents/GitHub/supercollider-source"
 SHARED_RINGBUFFER_PATH="$HOME/dev/shared-ringbuffer"
 
 echo "Cleaning..."

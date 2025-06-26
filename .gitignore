@@ -34,3 +34,7 @@ Makefile
 *.zip
 *.tar.gz
 *.tgz
+
+
+/build_macos.sh
+/build_windows.bat

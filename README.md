@@ -2,8 +2,6 @@
 
 A SuperCollider UGen that taps an incoming signal and writes it to a shared memory ring buffer for low-latency inter-process audio sharing.
 
----
-
 ## Features
 
 - Native SuperCollider plugin
@@ -15,8 +13,8 @@ A SuperCollider UGen that taps an incoming signal and writes it to a shared memo
 
 ## Requirements
 
-- SuperCollider (built from source — see below)
-- Boost (headers only)
+- SuperCollider built from source
+- Boost (only headers needed)
 - CMake ≥ 3.10
 - A C++14-compatible compiler
 - [shared-ringbuffer](https://github.com/mizramichaeljon/shared-ringbuffer)
@@ -25,81 +23,64 @@ A SuperCollider UGen that taps an incoming signal and writes it to a shared memo
 
 ## Building SuperCollider from Source
 
-To access the plugin interface headers, you **must** build SuperCollider from source.
+To get access to the necessary plugin headers, SuperCollider must be built from source. Follow the official instructions:
 
-Follow instructions here:  
-➡️ https://github.com/supercollider/supercollider/blob/develop/README.md
+- https://github.com/supercollider/supercollider/blob/develop/README.md
 
-> ⚠️ Keep the source folder after building! The plugin includes headers from `include/plugin_interface` and `include/common`.
+Ensure you retain the source folder after building, as the plugin includes headers from its `include/plugin_interface` and `include/common` directories.
 
 ---
 
 ## Build Instructions
 
-Each build script takes two arguments:
-1. The path to your SuperCollider source
-2. The path to your `shared-ringbuffer` clone
+### macOS
 
-### ✅ macOS
-
-First, install dependencies:
+Install dependencies via [Homebrew](https://brew.sh):
 
 ```bash
 brew install cmake boost
 ```
 
-Clone the required dependencies:
+Clone required dependencies:
 
 ```bash
 git clone https://github.com/supercollider/supercollider.git ~/dev/supercollider
 git clone https://github.com/mizramichaeljon/shared-ringbuffer.git ~/dev/shared-ringbuffer
 ```
 
-Clone and build this plugin:
+Set the paths once inside `build_macos.sh`, then:
 
 ```bash
-git clone https://github.com/mizramichaeljon/TapOutUgen.git
-cd TapOutUgen
 chmod +x build_macos.sh
-./build_macos.sh ~/dev/supercollider ~/dev/shared-ringbuffer
+./build_macos.sh
 ```
-
-The plugin `.scx` will be found in `build/Plugins`.
 
 ---
 
-### ✅ Windows
+### Windows
 
-Install:
+Install [CMake](https://cmake.org/), [Boost](https://www.boost.org/), and optionally install Boost using [vcpkg](https://github.com/microsoft/vcpkg):
 
-- [CMake](https://cmake.org/)
-- [Boost](https://www.boost.org/)
-- Optionally use [vcpkg](https://github.com/microsoft/vcpkg) for Boost:
-
-```powershell
+```bash
 vcpkg install boost
 ```
 
-Clone the required dependencies:
+Clone the required projects:
 
 ```powershell
 git clone https://github.com/supercollider/supercollider.git C:\dev\supercollider
 git clone https://github.com/mizramichaeljon/shared-ringbuffer.git C:\dev\shared-ringbuffer
 ```
 
-Then build:
+Set the paths once inside `build_windows.bat`, then run:
 
 ```powershell
-git clone https://github.com/mizramichaeljon/TapOutUgen.git
-cd TapOutUgen
-build_windows.bat C:\dev\supercollider C:\dev\shared-ringbuffer
+build_windows.bat
 ```
 
 ---
 
-## 🔧 Manual Build (Advanced)
-
-If you prefer, build with raw CMake:
+## Manual CMake Build (Advanced)
 
 ```bash
 cmake .. -DSC_PATH=/path/to/supercollider -DSHARED_RINGBUFFER_PATH=/path/to/shared-ringbuffer
@@ -110,16 +91,6 @@ cmake --build .
 
 ## Plugin Installation
 
-Copy the plugin and class file to your SuperCollider Extensions directory.
-
-### Common paths:
-
-- macOS: `~/Library/Application Support/SuperCollider/Extensions/`
-- Linux: `~/.local/share/SuperCollider/Extensions/`
-- Windows: `%APPDATA%\SuperCollider\Extensions\`
-
-Example (macOS):
-
 ```bash
 mkdir -p ~/Library/Application\ Support/SuperCollider/Extensions/TapOutUgen
 cp build/Plugins/TapOut.scx ~/Library/Application\ Support/SuperCollider/Extensions/TapOutUgen/
@@ -128,19 +99,13 @@ cp TapOut.sc ~/Library/Application\ Support/SuperCollider/Extensions/TapOutUgen/
 
 ---
 
-## Usage
+## SuperCollider Usage
 
 ```supercollider
 TapOut.ar(SinOsc.ar(440))
 ```
 
-- Writes signal to a shared memory buffer called `"ringbuffer_audio"`
-- Use [ringBufferVisual](https://github.com/mizramichaeljon/ringBufferVisual) or CLI tools to read it
-
-✅ Optional:
-```supercollider
-TapOut.ar(SinOsc.ar(440)).plot; // hear and see signal
-```
+This writes the signal to a shared memory buffer called `"ringbuffer_audio"`.
 
 ---
 

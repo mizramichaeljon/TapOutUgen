@@ -30,19 +30,6 @@ Make sure this path contains the 'include' directory.
 ")
 endif()
 
-# === Include paths ===
-include_directories(
-    ${SC_PATH}/include/plugin_interface
-    ${SC_PATH}/include/common
-    ${SHARED_RINGBUFFER_PATH}/include
-)
-
-# === macOS-specific include/lib (optional Homebrew paths) ===
-if(APPLE)
-    include_directories(/opt/homebrew/include)
-    link_directories(/opt/homebrew/lib)
-endif()
-
 # === Plugin source ===
 set(SOURCES
     TapOut.cpp
@@ -50,19 +37,31 @@ set(SOURCES
 
 add_library(${PLUGIN_NAME} MODULE ${SOURCES})
 
+target_include_directories(${PLUGIN_NAME} PRIVATE
+    ${SC_PATH}/include/plugin_interface
+    ${SC_PATH}/include/common
+    ${SHARED_RINGBUFFER_PATH}/include
+)
+
+if(APPLE)
+    target_include_directories(${PLUGIN_NAME} PRIVATE /opt/homebrew/include)
+    link_directories(/opt/homebrew/lib)
+endif()
+
 set_target_properties(${PLUGIN_NAME} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Plugins
     PREFIX ""
     SUFFIX ".scx"
+    POSITION_INDEPENDENT_CODE ON
 )
 
-# === Optional Boost linking (only if you use non-header parts) ===
+# === Optional Boost linking ===
 # find_package(Boost REQUIRED COMPONENTS system thread)
 # if(Boost_FOUND)
-#     include_directories(${Boost_INCLUDE_DIRS})
-#     target_link_libraries(${PLUGIN_NAME} ${Boost_LIBRARIES})
+#     target_include_directories(${PLUGIN_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
+#     target_link_libraries(${PLUGIN_NAME} PRIVATE ${Boost_LIBRARIES})
 # endif()
 
-# === Optional: Install plugin into SC build tree ===
+# === Optional install target ===
 # set(SC_PLUGIN_INSTALL_DIR "${SC_PATH}/install/share/SuperCollider/Extensions")
 # install(TARGETS ${PLUGIN_NAME} DESTINATION ${SC_PLUGIN_INSTALL_DIR})

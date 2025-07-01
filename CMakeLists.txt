@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PLUGIN_NAME TapOut)
 
-# === REQUIRED: SuperCollider path ===
+# === SuperCollider path ===
 set(SC_PATH "" CACHE PATH "Path to SuperCollider source")
 
 if(NOT SC_PATH OR NOT EXISTS "${SC_PATH}/include/plugin_interface/SC_PlugIn.hpp")
@@ -18,7 +18,7 @@ Make sure this path contains the header: include/plugin_interface/SC_PlugIn.hpp
 ")
 endif()
 
-# === REQUIRED: SharedRingBuffer path ===
+# === SharedRingBuffer path ===
 set(SHARED_RINGBUFFER_PATH "" CACHE PATH "Path to shared-ringbuffer project")
 
 if(NOT SHARED_RINGBUFFER_PATH OR NOT EXISTS "${SHARED_RINGBUFFER_PATH}/include/SharedRingBufferHeader.hpp")
@@ -35,13 +35,13 @@ include_directories(
     ${SC_PATH}/include/plugin_interface
     ${SC_PATH}/include/common
     ${SHARED_RINGBUFFER_PATH}/include
-    /opt/homebrew/include
 )
 
-# === Link paths ===
-link_directories(
-    /opt/homebrew/lib
-)
+# === macOS-specific include/lib (optional Homebrew paths) ===
+if(APPLE)
+    include_directories(/opt/homebrew/include)
+    link_directories(/opt/homebrew/lib)
+endif()
 
 # === Plugin source ===
 set(SOURCES
@@ -56,6 +56,13 @@ set_target_properties(${PLUGIN_NAME} PROPERTIES
     SUFFIX ".scx"
 )
 
-# === Link with Boost if needed (no linking needed for header-only use) ===
-# target_link_libraries(${PLUGIN_NAME} boost_system boost_thread) 
-# Uncomment if you start using parts of Boost that require linking
+# === Optional Boost linking (only if you use non-header parts) ===
+# find_package(Boost REQUIRED COMPONENTS system thread)
+# if(Boost_FOUND)
+#     include_directories(${Boost_INCLUDE_DIRS})
+#     target_link_libraries(${PLUGIN_NAME} ${Boost_LIBRARIES})
+# endif()
+
+# === Optional: Install plugin into SC build tree ===
+# set(SC_PLUGIN_INSTALL_DIR "${SC_PATH}/install/share/SuperCollider/Extensions")
+# install(TARGETS ${PLUGIN_NAME} DESTINATION ${SC_PLUGIN_INSTALL_DIR})

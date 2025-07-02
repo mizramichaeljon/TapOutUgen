@@ -1,9 +1,6 @@
 TapOut : UGen {
     *ar { |in|
-        ^this.multiNew('audio', in)
-    }
-
-    init { |...args|
-        ^super.init(*args)
+        var inArray = in.asArray;
+        ^this.multiNewList('audio', inArray)
     }
 }

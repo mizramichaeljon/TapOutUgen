@@ -1,51 +1,79 @@
-#include "SC_PlugIn.hpp"             // Required for SuperCollider plugin interface
-#include "SharedRingBufferWriter.hpp"      // Your custom shared memory class
-#include <cstring>                   // For std::memcpy
+#include "SC_PlugIn.hpp"              // Required for SuperCollider plugin interface
+#include "SharedRingBufferWriter.hpp" // Shared memory ring buffer writer
+#include <cstring>                    // For std::memcpy
+#include <vector>                     // For interleaved buffer
 
 // Required by SuperCollider plugins: provides function table pointer
-static InterfaceTable* ft;
+static InterfaceTable *ft;
 
 // ================================
 // TapOut UGen Definition
 // ================================
-struct TapOut : public Unit {
-    SharedRingBufferWriter* ringBuffer;
+struct TapOut : public Unit
+{
+    SharedRingBufferWriter *ringBuffer;
 
-    // Constructor: Called once when the Synth is instantiated
-    TapOut() {
-        // Create a shared ring buffer with enough space for 1 second of stereo audio at 48kHz
-        ringBuffer = new SharedRingBufferWriter("ringbuffer_audio", 48000 * 2);
+    TapOut()
+    {
+        try
+        {
+            ringBuffer = new SharedRingBufferWriter("ringbuffer_audio");
+        }
+        catch (const std::exception &e)
+        {
+            Print("[TapOut] Failed to attach to shared memory: %s\n", e.what());
+            ringBuffer = nullptr;
+        }
 
-        // Assign the audio processing callback (next method)
-       mCalcFunc = [](Unit* unit, int inNumSamples) {
-    static_cast<TapOut*>(unit)->next(inNumSamples);
-};
+        mCalcFunc = [](Unit *unit, int inNumSamples)
+        {
+            static_cast<TapOut *>(unit)->next(inNumSamples);
+        };
 
-        // Zero out all output buffers initially
-        for (int i = 0; i < mNumOutputs; ++i) {
+        for (int i = 0; i < mNumOutputs; ++i)
+        {
             ClearUnitOutputs(this, i);
         }
     }
 
     // Destructor: Called when the Synth is freed
-    ~TapOut() {
-        if (ringBuffer) {
+    ~TapOut()
+    {
+        if (ringBuffer)
+        {
             delete ringBuffer;
             ringBuffer = nullptr;
         }
     }
 
     // DSP loop: Called every control block
-    void next(int inNumSamples) {
-        float* in = mInBuf[0];   // First input channel
-        float* out = mOutBuf[0]; // First output channel
+    void next(int inNumSamples)
+    {
+        float *inL = mInBuf[0];                               // Left channel input
+        float *inR = (mNumInputs >= 2) ? mInBuf[1] : nullptr; // Right channel input (optional)
 
-        // Simple passthrough: copy input directly to output
-        std::memcpy(out, in, sizeof(float) * inNumSamples);
+        float *outL = mOutBuf[0];                               // Left output
+        float *outR = (mNumOutputs > 1) ? mOutBuf[1] : nullptr; // Right output (optional)
 
-        // Write input to shared memory
-        if (ringBuffer) {
-            ringBuffer->write(in, inNumSamples);
+        // Interleave audio data into a single buffer for writing to shared memory
+        std::vector<float> interleaved(2 * inNumSamples);
+        for (int i = 0; i < inNumSamples; ++i)
+        {
+            interleaved[2 * i] = inL[i];
+            interleaved[2 * i + 1] = inR ? inR[i] : 0.0f;
+        }
+
+        // Copy input to output (passthrough)
+        std::memcpy(outL, inL, sizeof(float) * inNumSamples);
+        if (outR && inR)
+        {
+            std::memcpy(outR, inR, sizeof(float) * inNumSamples);
+        }
+
+        // Write interleaved audio to shared memory
+        if (ringBuffer)
+        {
+            ringBuffer->write(interleaved.data(), interleaved.size());
         }
     }
 };
@@ -53,20 +81,23 @@ struct TapOut : public Unit {
 // ================================
 // UGen Registration
 // ================================
-
-extern "C" {
+extern "C"
+{
     // Constructor bridge required by SuperCollider
-    void TapOut_Ctor(TapOut* unit) {
+    void TapOut_Ctor(TapOut *unit)
+    {
         new (unit) TapOut(); // Placement new: calls constructor on pre-allocated memory
     }
 
     // Destructor bridge
-    void TapOut_Dtor(TapOut* unit) {
+    void TapOut_Dtor(TapOut *unit)
+    {
         unit->~TapOut(); // Explicit destructor call
     }
 
     // Entry point when the plugin is loaded
-    PluginLoad(TapOut) {
+    PluginLoad(TapOut)
+    {
         ft = inTable;
         DefineDtorUnit(TapOut); // Registers the UGen with its constructor and destructor
     }

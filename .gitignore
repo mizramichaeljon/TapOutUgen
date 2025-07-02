@@ -39,3 +39,4 @@ Makefile
 build_macos.sh
 build_windows.bat
 *.bat
+text.txt
